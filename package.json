@@ -1,0 +1,27 @@
+{
+  "name": "receiver",
+  "version": "1.0.0",
+  "description": "Arduino - Serial Sender Receiver combo with simple error correction",
+  "main": "Sender.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node Server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janroesner/Receiver.git"
+  },
+  "keywords": [
+    "Arduino",
+    "Serial"
+  ],
+  "author": "Jan Roesner <jan@roesner.it>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/janroesner/Receiver/issues"
+  },
+  "homepage": "https://github.com/janroesner/Receiver#readme",
+  "dependencies": {
+    "serialport": "^8.0.6"
+  }
+}
