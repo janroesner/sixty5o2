@@ -10,8 +10,13 @@ const CHUNK_SUCCESS = 'chunkSuccess'
 const CHUNK_FAILURE = 'chunkFailure'
 const EOF = 'eof'
 
+// Constants for serial port communication
 const SERIAL_ERROR = 'error'
 const SERIAL_DATA = 'data'
+
+// Protocol constants
+const PROTOCOL_OK = 'k'
+const PROTOCOL_FAILURE = 'f'
 
 // JSON config file for all connection related details
 const CONFIG_FILE_NAME = '.sender_config.json'
@@ -45,13 +50,12 @@ const establishParser = (connection, emitter) => {
 
     parser.on(SERIAL_DATA, (data) => {
       const response = data.toString().trim()
-      // response 'k' stands for ok
-      if (response == 'k') {
+      if (response == PROTOCOL_OK) {
         emitter.emit(CHUNK_SUCCESS)
-      } else if (response == 'f') {
+      } else if (response == PROTOCOL_FAILURE) {
         emitter.emit(CHUNK_FAILURE)
       } else {
-        console.log('Response: ', response)
+        console.log('Arduino Response: ', response)
       }
     })
 }
@@ -67,7 +71,7 @@ const sendByte = (connection, char) => {
 
 // write a chunk of bytes to the serial connection including checksum
 const sendChunk = (connection, data) => {
-  var idx = 0
+  let idx = 0
 
   // both methods are destructive
   data = appendPadding(data)
@@ -75,11 +79,11 @@ const sendChunk = (connection, data) => {
 
   base64 = data.toString('base64')
   
-  let decimals = data.join('-')
+  // let decimals = data.join('-')
   // console.log('Data: ', decimals)
   // console.log('Base64: ', base64)
 
-  return new Promise((res, rej) => {
+  return new Promise((res) => {
     setTimeout(() => {
       const interval = setInterval(() => {
         if (idx == base64.length) { 
@@ -87,7 +91,7 @@ const sendChunk = (connection, data) => {
           res()
         } else {
           sendByte(connection, base64[idx])
-          idx = idx + 1
+          idx += 1
         }
       }, byteTimeout)
     }, chunkTimeout)
@@ -96,10 +100,9 @@ const sendChunk = (connection, data) => {
 
 // simple 1-byte checksum algorithm
 const checkSum = (data) => {
-  var cs = 0
+  let cs = 0
   data.forEach((element) => {
     bin = element.toString(2)
-
     cs = (cs << 1) + parseInt(bin[bin.length - 1])
   })
 
@@ -143,8 +146,8 @@ const inGroupsOf = (ary, size) => {
   return result
 }
 
-// simple index manager constructor function
-const indexManager = (m) => {
+// simple index constructor function
+const Index = (m) => {
   let idx = 0
   const max = m - 1
 
@@ -156,7 +159,7 @@ const indexManager = (m) => {
     if (idx >= max) {
       return null
     } else {
-      idx = idx + 1
+      idx += 1
 
       return idx
     }
@@ -202,12 +205,12 @@ const sendFirstChunk = (connection, chunk) => {
 const sendNextChunk = (connection, index, chunks, emitter) => {
   const idx = index.increase()
 
-  if (idx == null) {
-    console.log('No chunk left!')
-    emitter.emit(EOF)
-  } else {
+  if (idx) {
     console.log('Sending chunk: ', idx)
     sendChunk(connection, chunks[idx])
+  } else {
+    console.log('No chunk left!')
+    emitter.emit(EOF)
   }
 }
 
@@ -215,11 +218,11 @@ const sendNextChunk = (connection, index, chunks, emitter) => {
 const repeatChunk = (connection, index, chunks, emitter) => {
   const idx = index.get()
 
-  if (idx == null) {
-    emitter.emit(EOF)
-  } else {
+  if (idx) {
     console.log('Repeating chunk: ', idx)
     sendChunk(connection, chunks[idx])
+  } else {
+    emitter.emit(EOF)
   }
 }
 
@@ -253,7 +256,7 @@ const quit = (connection) => {
     console.log('Establishing connection...')
     const connection = connectSerial(config, tty)
 
-    const index = indexManager(chunks.length)
+    const index = Index(chunks.length)
 
     console.log('Establishing event handlers...')
     emitter = establishEventHandlers(connection, index, chunks)
@@ -266,7 +269,6 @@ const quit = (connection) => {
       console.log('Ready to send data.')
       
       emitter.emit(START, connection, chunks[0])
- 
     }, startTimeout)
   } catch(e) {
     console.log(e)

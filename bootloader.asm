@@ -85,7 +85,6 @@ main:                                           ; boot routine, first thing load
 ;
 ;   MENU_main - renders a scrollable menu w/ dynamic number of entries
 ;
-;   S
 ;   ————————————————————————————————————
 ;   Preparatory Ops: none
 ;
@@ -154,7 +153,7 @@ MENU_main:
     cmp #$08
     beq .select_option                          ; RIGHT key pressed
     lda #0                                      ; explicitly setting A is a MUST here
-    jmp .wait_for_input                         ; and go round
+    jmp .wait_for_input                         ; and go around
 
 .move_up:
     lda POSITION_CURSOR                         ; load cursor position
@@ -237,7 +236,7 @@ MENU_main:
 .credits:                                       ; start the credits routine
     lda #<credits
     ldy #>credits
-    ldx #4
+    ldx #3
     jsr LCD__print_text
     jmp .start
 .do_load:                                       ; orchestration of program loading
@@ -445,13 +444,14 @@ MONITOR__main:
 
     jsr LCD__render
 
-    lda #$ff                                    ; debounce #TODO
-    jsr LIB__sleep
 .wait_for_input:                                ; wait for key press
-    lda #$ff                                    ; debounce #TODO
+    ldx #$04                                    ; debounce #TODO
+.wait:
+    lda #$ff                                    
     jsr LIB__sleep
-    lda #$80                                    ; debounce #TODO
-    jsr LIB__sleep
+    dex
+    bne .wait
+
     lda #0
     jsr VIA__read_keyboard_input
     bne .handle_keyboard_input                  ; a key was pressed? yes
@@ -469,7 +469,7 @@ MONITOR__main:
     lda #0                                      ; explicitly setting A is a MUST here
     jmp .wait_for_input
 .exit_monitor:
-    lda #0                                      ; !!!! WTF?!? !!!!!
+    lda #0                                      ; needed for whatever reason
     rts
 
 .move_down:
@@ -489,7 +489,7 @@ MONITOR__main:
     adc #$00
     sta Z0
     lda Z1
-    adc #$08
+    adc #$04
     sta Z1
     jmp .render_current_ram_location            ; and re-render
 .transform_contents:                            ; start reading address and ram contents into stack
@@ -546,6 +546,7 @@ MONITOR__main:
     lda #":"                                    ; writing the two colons
     sta VIDEO_RAM+$4
     sta VIDEO_RAM+$14
+
     rts
 
 
@@ -568,6 +569,7 @@ VIA__read_keyboard_input:
     lda PORTA                                   ; load current key status from VIA
     ror                                         ; normalize the input to $1, $2, $4 and $8
     and #$0f
+
     rts
 
 
@@ -590,6 +592,7 @@ VIA__read_keyboard_input:
 VIA__configure_ddrs:
     sta DDRB                                    ; configure data direction for port B from A reg.
     stx DDRA                                    ; configure data direction for port A from X reg.
+
     rts
 
 
@@ -613,8 +616,8 @@ LCD__clear_video_ram:
     tya                                         ; same for Y
     pha
     ldy #$20                                    ; set index to 32
-.loop:
     lda #$20                                    ; set character to 'space'
+.loop:
     sta VIDEO_RAM,Y                             ; clean video ram
     dey                                         ; decrease index
     bne .loop                                   ; are we done? no, repeat
@@ -622,6 +625,7 @@ LCD__clear_video_ram:
     pla                                         ; restore Y
     tay
     pla                                         ; restore A
+
     rts
 
 ;================================================================================
@@ -1138,7 +1142,7 @@ menu_items:
     .text " About          "
     .text " Credits        "
 about:
-    .asciiz "Sixty/5o2       Bootloader and  Monitor written by Jan Roesner  <jan@roesner.it>"
+    .asciiz "Sixty/5o2       Bootloader and  Monitor written by Jan Roesner  <jan@roesner.it>git.io/JvTM1   "
 credits:
     .asciiz "Ben Eater       6502 Project    Steven Wozniak  bin2hex routine Anke L.         love & patience"
 
@@ -1180,8 +1184,8 @@ credits:
 ;
 ;================================================================================
 
-    ;.org $FFD7                                 ; as close as possible to the ROM's end
-    .org $9000                                  ; as close as possible to the ROM's end
+    .org $FFC9                                  ; as close as possible to the ROM's end
+
 ISR:
 CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indirect writing
 
