@@ -83,7 +83,7 @@ const sendChunk = (connection, data) => {
   // console.log('Data: ', decimals)
   // console.log('Base64: ', base64)
 
-  return new Promise((res, rej) => {
+  return new Promise((res) => {
     setTimeout(() => {
       const interval = setInterval(() => {
         if (idx == base64.length) { 
