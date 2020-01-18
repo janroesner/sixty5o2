@@ -237,7 +237,7 @@ MENU_main:
 .credits:                                       ; start the credits routine
     lda #<credits
     ldy #>credits
-    ldx #4
+    ldx #3
     jsr LCD__print_text
     jmp .start
 .do_load:                                       ; orchestration of program loading
