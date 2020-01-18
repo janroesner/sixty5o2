@@ -63,16 +63,13 @@ main:                                           ; boot routine, first thing load
     jsr LCD__clear_screen
     jsr LCD__clear_video_ram
 
-    lda #WAIT_C
-    sta WAIT
-
     lda #<message                               ; render the boot screen
     ldy #>message
     jsr LCD__print
 
     ldx #$20                                    ; delay further progress for a bit longer
-.wait:
     lda #$ff
+.wait:
     jsr LIB__sleep
     dex
     bne .wait
@@ -108,8 +105,8 @@ MENU_main:
 .start:                                         ; and off we go
     jsr LCD__clear_video_ram
     ldx POSITION_MENU
-    lda .OFFSETS,X
-    tay                                         ; load first offset into Y
+    ldy .OFFSETS,X
+                                                ; load first offset into Y
     ldx #0                                      ; set X to 0
 .loop:
     lda menu_items,Y                            ; load string char for Y
@@ -122,10 +119,9 @@ MENU_main:
 .render_cursor:                                 ; render cursor position based on current state
     lda #">"
     ldy POSITION_CURSOR
-    cpy #0  
-    bne .lower_cursor
+    beq .lower_cursor
     sta VIDEO_RAM
-    jmp .render
+    bne .render
 .lower_cursor:
     sta VIDEO_RAM+$10
 
@@ -134,17 +130,16 @@ MENU_main:
 
 .wait_for_input:                                ; handle keyboard input
     ldx #4
-.wait:
     lda #$ff                                    ; debounce
+.wait:
     jsr LIB__sleep
     dex
     bne .wait
 
     lda #0
     jsr VIA__read_keyboard_input
-    bne .handle_keyboard_input                  ; do we have input? yes?
-    jmp .wait_for_input                         ; no
-
+    beq .wait_for_input                         ; no
+      
 .handle_keyboard_input:
     cmp #$01    
     beq .move_up                                ; UP key pressed
@@ -157,18 +152,15 @@ MENU_main:
 
 .move_up:
     lda POSITION_CURSOR                         ; load cursor position
-    cmp #0                                      ; is cursor in up position? 
-    beq .dec_menu_offset                        ; yes?
+    beq .dec_menu_offset                        ; is cursor in up position? yes?
     lda #0                                      ; no? 
     sta POSITION_CURSOR                         ; set cursor in up position
     jmp .start                                  ; re-render the whole menu
 .dec_menu_offset:
     lda POSITION_MENU
-    bne .decrease                               ; are we on menu top already, no?
-    jmp .wait_for_input                         ; yes, just re-render
+    beq .wait_for_input                         ; yes, just re-render
 .decrease:
-    sbc #1                                      ; decrease menu position by one
-    sta POSITION_MENU
+    dec POSITION_MENU                           ; decrease menu position by one
     jmp .start                                  ; and re-render
 
 .move_down:
@@ -247,8 +239,6 @@ MENU_main:
     rts
 .do_run:                                        ; orchestration of running a program
     jmp BOOTLOADER__execute
-
-    rts                                         ; should a program ever return ...
 .end
     jmp .start                                  ; should we ever reach this point ...
 
@@ -307,17 +297,16 @@ LOADING_STATE = Z2
     sta LOADING_STATE
 
     ldx #$20                                    ; then we wait for * cycles !!!! Increase w/ instable loading
-.loop:
     lda #$ff
+.loop:
     jsr LIB__sleep
     dex
     bne .loop
 
     lda LOADING_STATE                           ; check back loading state, which was eventually updated by the ISR
     cmp #$02
-    beq .done_loading                           ; when no data came in in last * cycles, we're done loading
-    jmp .loading_data
-
+    bne .loading_data
+                                               ; when no data came in in last * cycles, we're done loading  
 .done_loading:
     jsr LCD__initialize
     jsr LCD__clear_screen
@@ -355,9 +344,6 @@ BOOTLOADER__execute:
     jsr LCD__print
     jmp PROGRAM_LOCATION                        ; and jump to program location
 
-    rts
-
-
 ;================================================================================
 ;
 ;   BOOTLOADER__clear_ram - clears RAM from $0200 up to $3fff
@@ -379,29 +365,18 @@ BOOTLOADER__clear_ram:
     ldy #>message8
     jsr LCD__print
 
-    lda #<PROGRAM_LOCATION                      ; load start location into zero page
-    sta Z0
+    ldy #<PROGRAM_LOCATION                      ; load start location into zero page
+    sty Z0
     lda #>PROGRAM_LOCATION
     sta Z1
-    ldy #0                                      ; set index to always 0
+    lda #$00                                    ;  load 0x00 cleaner byte
 .loop:
-    lda #$00                                    ; load 0x00 cleaner byte
     sta (Z0),Y                                  ; store it in current location
-    clc
-    lda Z0                                      ; increase 16 bit address by 0x01
-    adc #$01
-    sta Z0
-    lda Z1
-    adc #$00
-    sta Z1
-    cmp #$3f                                    ; is MSB close to RAM end?
-    beq .check_lsn                              ; yes, check LSB
-    jmp .loop                                   ; no, repeat with next RAM location
-.check_lsn:
-    lda Z0                                      ; load LSB
-    cmp #$ff                                    ; real RAM end?
-    bne .loop                                   ; no, repeat with next RAM location
-
+    iny                                         ; increase 16 bit address by 0x01
+    bne .loop    
+    inc Z1
+    bit Z1                                      ; V is set on bit 6 (= $40)
+    bvs .loop
     rts                                         ; yes, return from subroutine
 
 ;================================================================================
@@ -434,9 +409,9 @@ MONITOR__main:
     lda Z0
     adc #$04
     sta Z0
-    lda Z1
-    adc #$00
-    sta Z1
+    bcc .skip
+    inc Z1
+.skip:    
 
     lda #$01                                    ; select lower row of video ram
     sta Z3
@@ -454,9 +429,8 @@ MONITOR__main:
 
     lda #0
     jsr VIA__read_keyboard_input
-    bne .handle_keyboard_input                  ; a key was pressed? yes
-    jmp .wait_for_input                         ; no
-
+    beq .wait_for_input                         ; a key was pressed? no
+ 
 .handle_keyboard_input:                         ; determine action for key pressed
     cmp #$01    
     beq .move_up                                ; UP key pressed
@@ -765,17 +739,15 @@ LCD__print_text:
     lda .CURRENT_PAGE                           ; are we on the first page?
     beq .wait_for_input                         ; yes, just ignore the keypress and wait for next one
 
-    sec                                         ; no, decrease current page by 1
-    sbc #1
-    sta .CURRENT_PAGE
+    dec .CURRENT_PAGE                           ; no, decrease current page by 1
 
     sec                                         ; decrease reading pointer by 32 bytes
     lda Z0
     sbc #$20
     sta Z0
-    lda Z1
-    sbc #$00
-    sta Z1
+    bcs .skipdec
+    dec Z1
+.skipdec:    
     jmp .render_page                            ; and re-render
 
 .move_down:
@@ -783,20 +755,16 @@ LCD__print_text:
     cmp Z2                                      ; are we on last page already
     beq .wait_for_input                         ; yes, just ignore keypress and wait for next one
 
-    clc                                         ; no, increase current page by 1
-    adc #1
-    sta .CURRENT_PAGE
+    inc .CURRENT_PAGE                           ; no, increase current page by 1
 
     clc                                         ; add 32 to the text pointer
     lda Z0
     adc #$20
     sta Z0
-    lda Z1
-    adc #$00
-    sta Z1
+    bcc .skipinc
+    inc Z1
+.skipinc:
     jmp .render_page                            ; and re-render
-
-    rts                                         ; should we ever get here ...
 
 ;================================================================================
 ;
@@ -824,10 +792,7 @@ LCD__initialize:
     jsr LCD__send_instruction
     
     lda #%00000110                              ; increment and shift cursor, don't shift display
-    jsr LCD__send_instruction
-
-    rts
-
+    jmp LCD__send_instruction
 
 ;================================================================================
 ;
@@ -872,10 +837,7 @@ LCD__clear_screen:
 ;================================================================================
 
 LCD__set_cursor:
-    jsr LCD__send_instruction
-
-    rts
-
+    jmp LCD__send_instruction
 
 ;================================================================================
 ;
@@ -963,18 +925,13 @@ LCD__check_busy_flag:
     lda #RW                                     ; prepare read mode
     sta PORTA
 
-    lda PORTB                                   ; read data from LCD
-    and #%10000000                              ; mask first bit
-
-    cmp #$80                                    ; is bit set?
-    bne .ready                                  ; no, LCD is ready to take next instruction
-
-    lda #1                                      ; yes, LCD is still busy, need waiting
-    jmp .return
+    bit PORTB                                   ; read data from LCD
+    bpl .ready                                  ; bit 7 not set -> ready
+    lda #1                                      ; bit 7 set, LCD is still busy, need waiting
+    rts
 .ready:
     lda #0
 .return:
-
     rts
 
 ;================================================================================
@@ -998,8 +955,7 @@ LCD__send_instruction:
     pha                                         ; preserve A
 .loop                                           ; wait until LCD becomes ready
     jsr LCD__check_busy_flag
-    cmp #0
-    bne .loop
+    beq .loop
     pla                                         ; restore A
 
     sta PORTB                                   ; write accumulator content into PORTB
@@ -1098,23 +1054,15 @@ LIB__bin_to_hex:
 ;================================================================================
 
 LIB__sleep:
+    ldy #WAIT_C
+    sty WAIT
+.outerloop:
     tay
-    pha
-.outer:
-    pla
-    tay
-    pha
 .loop:
     dey
     bne .loop
-    lda WAIT
-    sbc #1
-    sta WAIT
-    bne .outer
-    lda #WAIT_C
-    sta WAIT
-    pla
-
+    dec WAIT
+    bne .outerloop
     rts
 
 message:
@@ -1189,8 +1137,6 @@ credits:
 ISR:
 CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indirect writing
 
-    sei                                         ; set interrupt disable
-    php                                         ; preserving CPU, Y and A register
     pha
     tya
     pha
@@ -1201,13 +1147,7 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
     lda #1                                      ; otherwise set the first time marker
     sta ISR_FIRST_RUN                           ; and return from the interrupt
 
-    pla                                         ; else clean up and return from interrupt, restore Y
-    tay                                     
-    pla                                         ; restore A
-    plp                                         ; restore flags register
-    cli                                         ; clear interrupt disable flag
-
-    rti
+    jmp .doneisr
 
 .write_data:
     lda #$01                                    ; progressing state of loading operation
@@ -1217,19 +1157,15 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
     ldy #0
     sta (CURRENT_RAM_ADDRESS),Y                 ; store byte at current RAM location
 
-    clc                                         ; increase the 16bit RAM location
-    lda CURRENT_RAM_ADDRESS_L
-    adc #$01
-    sta CURRENT_RAM_ADDRESS_L
-    lda CURRENT_RAM_ADDRESS_H
-    adc #$00
-    sta CURRENT_RAM_ADDRESS_H
+                                               ; increase the 16bit RAM location
+    inc CURRENT_RAM_ADDRESS_L
+    bne .skipincramhi
+    inc CURRENT_RAM_ADDRESS_H
+.doneisr
 
     pla                                         ; restore Y
     tay                                     
     pla                                         ; restore A
-    plp                                         ; restore flags register
-    cli                                         ; clear interrupt disable flag
 
     rti
 
