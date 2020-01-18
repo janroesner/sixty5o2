@@ -206,12 +206,12 @@ const sendFirstChunk = (connection, chunk) => {
 const sendNextChunk = (connection, index, chunks, emitter) => {
   const idx = index.increase()
 
-  if (idx == null) {
-    console.log('No chunk left!')
-    emitter.emit(EOF)
-  } else {
+  if (idx) {
     console.log('Sending chunk: ', idx)
     sendChunk(connection, chunks[idx])
+  } else {
+    console.log('No chunk left!')
+    emitter.emit(EOF)
   }
 }
 
@@ -219,11 +219,11 @@ const sendNextChunk = (connection, index, chunks, emitter) => {
 const repeatChunk = (connection, index, chunks, emitter) => {
   const idx = index.get()
 
-  if (idx == null) {
-    emitter.emit(EOF)
-  } else {
+  if (idx) {
     console.log('Repeating chunk: ', idx)
     sendChunk(connection, chunks[idx])
+  } else {
+    emitter.emit(EOF)
   }
 }
 
