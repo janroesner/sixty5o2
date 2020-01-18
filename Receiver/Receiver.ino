@@ -20,9 +20,9 @@ int RESPONSE_DELAY = 5; // microseconds
 int READ_BUFFER_DELAY = 20; // milliseconds
 
 int INTERRUPT_LOW_DELAY = 30; // microseconds
-int INTERRUPT_HIGH_DELAY = 20 // microseconds
+int INTERRUPT_HIGH_DELAY = 20; // microseconds
 
-int EOF_TIMEOUT = 150000;
+long EOF_TIMEOUT = 150000;
 
 
 void setup() {
