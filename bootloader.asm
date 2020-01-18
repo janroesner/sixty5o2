@@ -85,7 +85,6 @@ main:                                           ; boot routine, first thing load
 ;
 ;   MENU_main - renders a scrollable menu w/ dynamic number of entries
 ;
-;   S
 ;   ————————————————————————————————————
 ;   Preparatory Ops: none
 ;
@@ -154,7 +153,7 @@ MENU_main:
     cmp #$08
     beq .select_option                          ; RIGHT key pressed
     lda #0                                      ; explicitly setting A is a MUST here
-    jmp .wait_for_input                         ; and go round
+    jmp .wait_for_input                         ; and go around
 
 .move_up:
     lda POSITION_CURSOR                         ; load cursor position
@@ -469,7 +468,7 @@ MONITOR__main:
     lda #0                                      ; explicitly setting A is a MUST here
     jmp .wait_for_input
 .exit_monitor:
-    lda #0                                      ; !!!! WTF?!? !!!!!
+    lda #0                                      ; needed for whatever reason
     rts
 
 .move_down:
@@ -546,6 +545,7 @@ MONITOR__main:
     lda #":"                                    ; writing the two colons
     sta VIDEO_RAM+$4
     sta VIDEO_RAM+$14
+
     rts
 
 
@@ -568,6 +568,7 @@ VIA__read_keyboard_input:
     lda PORTA                                   ; load current key status from VIA
     ror                                         ; normalize the input to $1, $2, $4 and $8
     and #$0f
+
     rts
 
 
@@ -590,6 +591,7 @@ VIA__read_keyboard_input:
 VIA__configure_ddrs:
     sta DDRB                                    ; configure data direction for port B from A reg.
     stx DDRA                                    ; configure data direction for port A from X reg.
+
     rts
 
 
@@ -613,8 +615,8 @@ LCD__clear_video_ram:
     tya                                         ; same for Y
     pha
     ldy #$20                                    ; set index to 32
-.loop:
     lda #$20                                    ; set character to 'space'
+.loop:
     sta VIDEO_RAM,Y                             ; clean video ram
     dey                                         ; decrease index
     bne .loop                                   ; are we done? no, repeat
@@ -622,6 +624,7 @@ LCD__clear_video_ram:
     pla                                         ; restore Y
     tay
     pla                                         ; restore A
+
     rts
 
 ;================================================================================
