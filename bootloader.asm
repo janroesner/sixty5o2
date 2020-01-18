@@ -119,9 +119,10 @@ MENU_main:
 .render_cursor:                                 ; render cursor position based on current state
     lda #">"
     ldy POSITION_CURSOR
-    beq .lower_cursor
+    bne .lower_cursor
     sta VIDEO_RAM
-    bne .render
+    jmp .render
+
 .lower_cursor:
     sta VIDEO_RAM+$10
 
