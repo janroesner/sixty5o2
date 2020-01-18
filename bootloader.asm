@@ -1159,7 +1159,7 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
 
                                                ; increase the 16bit RAM location
     inc CURRENT_RAM_ADDRESS_L
-    bne .skipincramhi
+    bne .doneisr
     inc CURRENT_RAM_ADDRESS_H
 .doneisr
 
