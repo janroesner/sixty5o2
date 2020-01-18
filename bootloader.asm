@@ -1183,8 +1183,8 @@ credits:
 ;
 ;================================================================================
 
-    ;.org $FFD7                                 ; as close as possible to the ROM's end
-    .org $9000                                  ; as close as possible to the ROM's end
+    .org $FFC9                                  ; as close as possible to the ROM's end
+
 ISR:
 CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indirect writing
 
