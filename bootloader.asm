@@ -489,7 +489,7 @@ MONITOR__main:
     adc #$00
     sta Z0
     lda Z1
-    adc #$08
+    adc #$04
     sta Z1
     jmp .render_current_ram_location            ; and re-render
 .transform_contents:                            ; start reading address and ram contents into stack
