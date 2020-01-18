@@ -314,8 +314,6 @@ LOADING_STATE = Z2
     bne .loading_data
                                                ; when no data came in in last * cycles, we're done loading  
 .done_loading:
-    jsr LCD__initialize
-    jsr LCD__clear_screen
     jsr LCD__clear_video_ram
 
     lda #<message6
