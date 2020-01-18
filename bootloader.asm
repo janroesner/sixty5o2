@@ -1138,7 +1138,7 @@ menu_items:
     .text " About          "
     .text " Credits        "
 about:
-    .asciiz "Sixty/5o2       Bootloader and  Monitor written by Jan Roesner  <jan@roesner.it>"
+    .asciiz "Sixty/5o2       Bootloader and  Monitor written by Jan Roesner  <jan@roesner.it>git.io/JvTM1   "
 credits:
     .asciiz "Ben Eater       6502 Project    Steven Wozniak  bin2hex routine Anke L.         love & patience"
 
