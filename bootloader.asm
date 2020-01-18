@@ -63,6 +63,11 @@ main:                                           ; boot routine, first thing load
     jsr LCD__clear_screen
     jsr LCD__clear_video_ram
 
+    lda #$01
+.wait_for_lcd:
+    jsr LIB__sleep
+    bne .wait_for_lcd
+
     lda #<message                               ; render the boot screen
     ldy #>message
     jsr LCD__print
