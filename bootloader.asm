@@ -955,7 +955,7 @@ LCD__send_instruction:
     pha                                         ; preserve A
 .loop                                           ; wait until LCD becomes ready
     jsr LCD__check_busy_flag
-    beq .loop
+    bne .loop
     pla                                         ; restore A
 
     sta PORTB                                   ; write accumulator content into PORTB
