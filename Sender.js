@@ -10,8 +10,13 @@ const CHUNK_SUCCESS = 'chunkSuccess'
 const CHUNK_FAILURE = 'chunkFailure'
 const EOF = 'eof'
 
+// Constants for serial port communication
 const SERIAL_ERROR = 'error'
 const SERIAL_DATA = 'data'
+
+// Protocol constants
+const PROTOCOL_OK = 'k'
+const PROTOCOL_FAILURE = 'f'
 
 // JSON config file for all connection related details
 const CONFIG_FILE_NAME = '.sender_config.json'
@@ -45,13 +50,12 @@ const establishParser = (connection, emitter) => {
 
     parser.on(SERIAL_DATA, (data) => {
       const response = data.toString().trim()
-      // response 'k' stands for ok
-      if (response == 'k') {
+      if (response == PROTOCOL_OK) {
         emitter.emit(CHUNK_SUCCESS)
-      } else if (response == 'f') {
+      } else if (response == PROTOCOL_FAILURE) {
         emitter.emit(CHUNK_FAILURE)
       } else {
-        console.log('Response: ', response)
+        console.log('Arduino Response: ', response)
       }
     })
 }
