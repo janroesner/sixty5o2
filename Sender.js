@@ -79,7 +79,7 @@ const sendChunk = (connection, data) => {
 
   base64 = data.toString('base64')
   
-  let decimals = data.join('-')
+  // let decimals = data.join('-')
   // console.log('Data: ', decimals)
   // console.log('Base64: ', base64)
 
