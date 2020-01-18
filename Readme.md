@@ -28,7 +28,7 @@ So early on I tested, whether I could use the Arduino, connect 8 of it's digital
 
 Luckily I was able to speed up the 6502's clock by just replacing the capacitor of the unstable 555 timer circuit by a smaller one such, that loading data serially was - lets say - at least stable enough. That paved the way to more complex subroutines which now make up my "Sixty/5o2" micro bootloader / micro kernel. It works very well with full clock speed of 1MHz and is hopefully helpful to other 6502 enthusiasts as well.
 
-Especially the serial data transfer is enormously stable, since error mitigration (not correction) is baked into a minimalistic protocol, where there the sender side is implemented in node.js. Unfortunately I was not able to get a stable serial connection with serial terminals like `screen`, `minicom` or `picocom`. Hence I decided to build something myself. On the positive side of things I had the opportunity to integrate content transform using base64 encoding as well as simple error mitigation via a checksum algorithm plus a "send packet again" function.
+Especially the serial data transfer is enormously stable, since error mitigation (not correction) is baked into a minimalistic protocol, where there the sender side is implemented in node.js. Unfortunately I was not able to get a stable serial connection with serial terminals like `screen`, `minicom` or `picocom`. Hence I decided to build something myself. On the positive side of things I had the opportunity to integrate content transform using base64 encoding as well as simple error mitigation via a checksum algorithm plus a "send packet again" function.
 
 **It's not perfect, in places not even nice. Last time I personally touched assembler was 20+ years ago, so please be gentle with criticism. PR's are king.**
 
@@ -41,7 +41,7 @@ There are only two requirements, both of them can be mitigated though:
 
 ## Possible Mitigation Strategies
 
-1. If you want to run at other clock speeds, you MUST adjust a global constant called `WAIT_C` in the bootloader code. It's a multiplier which is used to _sleep_  and just burns a number of cycles in a routine called `LIB__sleep`. If you run at lower clock speeds, adjust `WAIT_C` to a smaller number unless keyboard and main menu become usable.
+1. If you want to run at other clock speeds, you MUST adjust a global constant called `WAIT_C` in the bootloader code. It's a multiplier which is used to _sleep_  and just burns a number of cycles in a routine called `LIB__sleep`. If you run at lower clock speeds, adjust `WAIT_C` to a smaller number until keyboard and main menu become usable.
 
 2. Should your keyboard be built in a way so the buttons are normally tied _high_ and when pressed turn _low_, then you need to adjust the routine `VIA__read_keyboard_input` and XOR `A` with `$ff` after it was AND'ed with `#$0f`. This way the keystrokes will be interpreted correctly again.
 
