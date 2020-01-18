@@ -63,6 +63,11 @@ main:                                           ; boot routine, first thing load
     jsr LCD__clear_screen
     jsr LCD__clear_video_ram
 
+    lda #$01
+.wait_for_lcd:
+    jsr LIB__sleep
+    bne .wait_for_lcd
+
     lda #<message                               ; render the boot screen
     ldy #>message
     jsr LCD__print
@@ -309,8 +314,6 @@ LOADING_STATE = Z2
     bne .loading_data
                                                ; when no data came in in last * cycles, we're done loading  
 .done_loading:
-    jsr LCD__initialize
-    jsr LCD__clear_screen
     jsr LCD__clear_video_ram
 
     lda #<message6
@@ -815,8 +818,6 @@ LCD__clear_screen:
     pha
     lda #%00000001                              ; clear display
     jsr LCD__send_instruction
-    lda #$80                                    ; #TODO: better wait for busy flag to be clear
-    jsr LIB__sleep                              ; sleep for a while, because the display is not fast enough with a 103 capacitor
     pla
 
     rts
