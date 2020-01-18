@@ -815,8 +815,6 @@ LCD__clear_screen:
     pha
     lda #%00000001                              ; clear display
     jsr LCD__send_instruction
-    lda #$80                                    ; #TODO: better wait for busy flag to be clear
-    jsr LIB__sleep                              ; sleep for a while, because the display is not fast enough with a 103 capacitor
     pla
 
     rts
