@@ -103,7 +103,6 @@ const checkSum = (data) => {
   let cs = 0
   data.forEach((element) => {
     bin = element.toString(2)
-
     cs = (cs << 1) + parseInt(bin[bin.length - 1])
   })
 
@@ -270,7 +269,6 @@ const quit = (connection) => {
       console.log('Ready to send data.')
       
       emitter.emit(START, connection, chunks[0])
- 
     }, startTimeout)
   } catch(e) {
     console.log(e)
