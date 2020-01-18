@@ -444,13 +444,14 @@ MONITOR__main:
 
     jsr LCD__render
 
-    lda #$ff                                    ; debounce #TODO
-    jsr LIB__sleep
 .wait_for_input:                                ; wait for key press
-    lda #$ff                                    ; debounce #TODO
+    ldx #$04                                    ; debounce #TODO
+.wait:
+    lda #$ff                                    
     jsr LIB__sleep
-    lda #$80                                    ; debounce #TODO
-    jsr LIB__sleep
+    dex
+    bne .wait
+
     lda #0
     jsr VIA__read_keyboard_input
     bne .handle_keyboard_input                  ; a key was pressed? yes
