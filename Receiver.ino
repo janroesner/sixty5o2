@@ -5,28 +5,38 @@ int8_t chunkSize = 9;
 long counter;
 bool firstRun;
 
-// data output pins connected to the 6522
+// Protocol constants
+char PROTOCOL_OK = 'k';
+char PROTOCOL_FAILURE = 'f';
+
+// Data output pins connected to the 6522
 const byte DATA[] = {31, 33, 35, 37, 39, 41, 43, 45};
 
-// interruptPIN connected directly to the IRQB pin (PIN4) of the 6502
+// Interrupt PIN connected directly to the IRQB pin (PIN4) of the 6502
 #define INTERRUPT 53
 
-// necessary timeouts
-int responseTimeoutMicros = 5; // microseconds
-int readBufferDelay = 20; // milliseconds
+// Necessary delays
+int RESPONSE_DELAY = 5; // microseconds
+int READ_BUFFER_DELAY = 20; // milliseconds
+
+int INTERRUPT_LOW_DELAY = 30; // microseconds
+int INTERRUPT_HIGH_DELAY = 20 // microseconds
+
+int EOF_TIMEOUT = 150000;
+
 
 void setup() {
     
-    // setting Arduinos pins to input before start, otherwise we interfere with the LCD
+    // Setting Arduinos pins to input before start, otherwise we interfere with the LCD
     for (int n = 0; n < 8; n += 1) {
         pinMode(DATA[n], INPUT);
     }
 
-    // setting interrupt PIN to output is no problem, PIN must be normal HIGH
+    // Setting interrupt PIN to output is no problem, PIN must be normal HIGH
     pinMode(INTERRUPT, OUTPUT);
     digitalWrite(INTERRUPT, HIGH);
     
-    // setting up helper variables to determine EOF later on
+    // Setting up helper variables to determine EOF later on
     counter = 0;
     firstRun = true;
         
@@ -36,7 +46,7 @@ void setup() {
 void loop() {
     if (Serial.available() >= 9) {
 
-        // as soon as data arrives, all pins are set to output exactly once
+        // As soon as data arrives, all pins are set to output exactly once
         if (firstRun == true) {
             for (int n = 0; n < 8; n += 1) {
                 digitalWrite(DATA[n], LOW);
@@ -45,32 +55,36 @@ void loop() {
             firstRun = false;
         }
 
-        // that delay is needed, otherwise the buffer can not be read reliably
-        delay(readBufferDelay);
+        // This delay is needed, otherwise the buffer can not be read reliably
+        delay(READ_BUFFER_DELAY);
         
-        // reading in a chunk of 13 bytes ... a few more than necessary #TODO
+        // Reading in a chunk of 14 bytes ... a few more than necessary #TODO
         for (int i = 0; i <= 14; i+= 1)  {
             chunk[i] = Serial.read();
         }
 
-        // base64 decode the chunk
+        // Base64-decode the chunk
         int chunkLength = sizeof(chunk);
         int decodedLength = Base64.decodedLength(chunk, chunkLength);
         char decodedChunk[decodedLength];
         Base64.decode(decodedChunk, chunk, chunkLength);
         
-        // when the chunks checksum is correct, write the data, otherwise ask the sender to repeat the chunk (responding f=failure)
+        // If the chunks checksum is correct, write the data, otherwise ask the sender to repeat the chunk
         if (decodedChunk[8] == checkSum(decodedChunk)) {
-            writeData(decodedChunk);
+            if (writeData(decodedChunk)) {
+                Serial.println(PROTOCOL_OK);
+            } else {
+                Serial.println(PROTOCOL_FAILURE);
+            }
         } else {
-            delayMicroseconds(responseTimeoutMicros); 
-            Serial.println('f');
+            delayMicroseconds(RESPONSE_DELAY); 
+            Serial.println(PROTOCOL_FAILURE);
         }
     } else {
-        // detect EOF here and set pins to INPUT again to prevent interference with LCD display
+        // Detect EOF here and set pins to INPUT again to prevent interference with LCD display
         counter += 1;
-        if (counter >= 150000) {
-            counter = 150000;
+        if (counter >= EOF_TIMEOUT) {
+            counter = EOF_TIMEOUT;
             for (int n = 0; n < 8; n += 1) {
                 pinMode(DATA[n], INPUT);
             }
@@ -79,34 +93,34 @@ void loop() {
     }
 }
 
-// writing the data on the output pins and trigger the 6502's interrupt service routine to write byte by byte
-void writeData(char ary[]) {
-    // loop through the 8 bytes of the given chunk
+// Writing the data on the output pins and trigger the 6502's interrupt service routine to write byte by byte
+bool writeData(char ary[]) {
+    // Loop through the 8 bytes of the given chunk
     for (int i = 0; i < 8; i += 1) {
-        char inp = ary[i];
+        char data = ary[i];
 
-        // for each byte set up the byte's corresponding bits at the digital ports
+        // For each byte set up the byte's corresponding bits at the digital ports
         for (int n = 0;  n < 8; n += 1) {
-            digitalWrite(31+2*n, bitRead(inp, n) ? HIGH : LOW);
+            digitalWrite(31+2*n, bitRead(data, n) ? HIGH : LOW);
         }
         
-        // pull the interrupt low for 30 microseconds to trigger the interrupt service routine
+        // Pull the interrupt pin low to trigger the interrupt service routine
         digitalWrite(INTERRUPT, LOW);
-        delayMicroseconds(30);
+        delayMicroseconds(INTERRUPT_LOW_DELAY);
         
-        // pull interrupt high again
+        // Pull interrupt high again
         digitalWrite(INTERRUPT, HIGH);
         
-        // leave data on the lines for a while, since it seems to be available rising edge
-        delayMicroseconds(20);
+        // Leave data on the lines for a while, since it seems to be read on rising edge
+        delayMicroseconds(INTERRUPT_HIGH_DELAY);
     }
+    delayMicroseconds(RESPONSE_DELAY);
 
-    // report back success (k=ok)
-    delayMicroseconds(responseTimeoutMicros);
-    Serial.println('k');
+    // Report back success
+    return (true);
 }
 
-// very simple 1-byte checksum algorithm - to be improved
+// Very simple 1-byte checksum algorithm - to be improved
 char checkSum(char buf[]) {
     int cs = 0;
     for (int i = 0; i < chunkSize - 1; i++) {
