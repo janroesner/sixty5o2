@@ -91,7 +91,7 @@ const sendChunk = (connection, data) => {
           res()
         } else {
           sendByte(connection, base64[idx])
-          idx = idx + 1
+          idx += 1
         }
       }, byteTimeout)
     }, chunkTimeout)
@@ -160,7 +160,7 @@ const indexManager = (m) => {
     if (idx >= max) {
       return null
     } else {
-      idx = idx + 1
+      idx += 1
 
       return idx
     }
