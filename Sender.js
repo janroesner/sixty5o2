@@ -71,7 +71,7 @@ const sendByte = (connection, char) => {
 
 // write a chunk of bytes to the serial connection including checksum
 const sendChunk = (connection, data) => {
-  var idx = 0
+  let idx = 0
 
   // both methods are destructive
   data = appendPadding(data)
@@ -100,7 +100,7 @@ const sendChunk = (connection, data) => {
 
 // simple 1-byte checksum algorithm
 const checkSum = (data) => {
-  var cs = 0
+  let cs = 0
   data.forEach((element) => {
     bin = element.toString(2)
 
