@@ -147,8 +147,8 @@ const inGroupsOf = (ary, size) => {
   return result
 }
 
-// simple index manager constructor function
-const indexManager = (m) => {
+// simple index constructor function
+const Index = (m) => {
   let idx = 0
   const max = m - 1
 
@@ -257,7 +257,7 @@ const quit = (connection) => {
     console.log('Establishing connection...')
     const connection = connectSerial(config, tty)
 
-    const index = indexManager(chunks.length)
+    const index = Index(chunks.length)
 
     console.log('Establishing event handlers...')
     emitter = establishEventHandlers(connection, index, chunks)
