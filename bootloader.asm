@@ -60,13 +60,7 @@ PROGRAM_LOCATION = $0200                        ; memory location for user progr
 
 main:                                           ; boot routine, first thing loaded
     jsr LCD__initialize
-    jsr LCD__clear_screen
     jsr LCD__clear_video_ram
-
-    lda #$01
-.wait_for_lcd:
-    jsr LIB__sleep
-    bne .wait_for_lcd
 
     lda #<message                               ; render the boot screen
     ldy #>message
@@ -797,30 +791,6 @@ LCD__initialize:
     
     lda #%00000110                              ; increment and shift cursor, don't shift display
     jmp LCD__send_instruction
-
-;================================================================================
-;
-;   LCD__clear_screen - clears the screen on hardware level (low level)
-;
-;   Not to confuse with LCD__clear_video_ram, which in contrast just deletes
-;   the stored RAM values which shall be displayed
-;   ————————————————————————————————————
-;   Preparatory Ops: none
-;
-;   Returned Values: none
-;
-;   Destroys:        none
-;   ————————————————————————————————————
-;
-;================================================================================
-
-LCD__clear_screen:
-    pha
-    lda #%00000001                              ; clear display
-    jsr LCD__send_instruction
-    pla
-
-    rts
 
 
 ;================================================================================
