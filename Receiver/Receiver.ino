@@ -9,11 +9,18 @@ bool firstRun;
 char PROTOCOL_OK = 'k';
 char PROTOCOL_FAILURE = 'f';
 
-// Data output pins connected to the 6522
-const byte DATA[] = {31, 33, 35, 37, 39, 41, 43, 45};
+// Data output pins connected to the 6522; values for Arduino Mega connected manually
+//const byte DATA[] = {31, 33, 35, 37, 39, 41, 43, 45};
 
-// Interrupt PIN connected directly to the IRQB pin (PIN4) of the 6502
-#define INTERRUPT 53
+// Data output pins connected to the 6522; values for Arduino nano
+const byte DATA[] = {5, 6, 7, 8, 9, 10, 11, 12};
+
+
+// Interrupt PIN connected directly to the IRQB pin (PIN4) of the 6502; value for Arduino Mega connected manually
+//#define INTERRUPT 53
+
+// Interrupt PIN connected directly to the IRQB pin (PIN4) of the 6502; value for Arduino nano
+#define INTERRUPT 13
 
 // Necessary delays
 int RESPONSE_DELAY = 5; // microseconds
@@ -101,7 +108,10 @@ bool writeData(char ary[]) {
 
         // For each byte set up the byte's corresponding bits at the digital ports
         for (int n = 0;  n < 8; n += 1) {
-            digitalWrite(31+2*n, bitRead(data, n) ? HIGH : LOW);
+            // Write operation for Arduino Mega
+            //digitalWrite(31+2*n, bitRead(data, n) ? HIGH : LOW);
+            // Write operation for Arduino nano
+            digitalWrite(5+n, bitRead(data, n) ? HIGH : LOW);
         }
         
         // Pull the interrupt pin low to trigger the interrupt service routine
