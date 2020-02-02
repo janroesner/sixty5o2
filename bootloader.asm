@@ -59,6 +59,9 @@ PROGRAM_LOCATION = $0200                        ; memory location for user progr
 ;================================================================================
 
 main:                                           ; boot routine, first thing loaded
+    ldx #$ff                                    ; initialize the stackpointer with 0xff
+    txs
+
     jsr LCD__initialize
     jsr LCD__clear_video_ram
 
