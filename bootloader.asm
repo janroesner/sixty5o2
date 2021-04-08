@@ -295,7 +295,7 @@ LOADING_STATE = Z2
     cmp #$00                                    ; the ISR will set to $01 as soon as a byte is read
     beq .wait_for_first_data
 
-.loading_data
+.loading_data:
     lda #$02                                    ; assuming we're done loading, we set loading state to $02
     sta LOADING_STATE
 
@@ -309,15 +309,23 @@ LOADING_STATE = Z2
     lda LOADING_STATE                           ; check back loading state, which was eventually updated by the ISR
     cmp #$02
     bne .loading_data
-                                               ; when no data came in in last * cycles, we're done loading  
+                                                ; when no data came in in last * cycles, we're done loading  
 .done_loading:
-    jsr LCD__clear_video_ram
+    lda #%11111111                              ; Reset VIA ports for output, set all pins on port B to output
+    ldx #%11100000                              ; set top 3 pins and bottom ones to on port A to output, 5 middle ones to input
+    jsr VIA__configure_ddrs
 
+    jsr LCD__clear_video_ram
     lda #<message6
     ldy #>message6
     jsr LCD__print
-    lda #$ff                                    ; wait a moment before we return to main menu
+
+    ldx #$20                                    ; wait a moment before we return to main menu
+    lda #$ff
+.loop_messagedisplay:
     jsr LIB__sleep
+    dex
+    bne .loop_messagedisplay
 
     rts
 
@@ -1041,7 +1049,7 @@ LIB__sleep:
     rts
 
 message:
-    .asciiz "Sixty/5o2       Bootloader v0.1"
+    .asciiz "Sixty/5o2       Bootloader v0.2"
 message2:
     .asciiz "Enter Command..."
 message3:
