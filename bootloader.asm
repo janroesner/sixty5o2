@@ -36,6 +36,7 @@ POSITION_MENU = $3fdc                           ; initialize positions for menu 
 POSITION_CURSOR = $3fdd
 WAIT = $3fdb
 WAIT_C = $18                                    ; global sleep multiplicator (adjust for slower clock)
+ISR_FIRST_RUN = $3fda                           ; used to determine first run of the ISR
 
 PROGRAM_LOCATION = $0200                        ; memory location for user programs
 
@@ -266,6 +267,9 @@ CURRENT_RAM_ADDRESS_H = Z1
 LOADING_STATE = Z2
     lda #%01111111                              ; we disable all 6522 interrupts!!!
     sta IER
+
+    lda #0                                      ; for a reason I dont get, the ISR is triggered...
+    sta ISR_FIRST_RUN                           ; one time before the first byte arrives, so we mitigate here
 
     jsr LCD__clear_video_ram
     lda #<message4                              ; Rendering a message
@@ -1111,6 +1115,14 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
     pha
     tya
     pha
+                                                ; for a reason I dont get, the ISR is called once with 0x00
+    lda ISR_FIRST_RUN                           ; check whether we are called for the first time
+    bne .write_data                             ; if not, just continue writing
+
+    lda #1                                      ; otherwise set the first time marker
+    sta ISR_FIRST_RUN                           ; and return from the interrupt
+
+    jmp .doneisr
 
 .write_data:
     lda #$01                                    ; progressing state of loading operation
