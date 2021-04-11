@@ -33,9 +33,8 @@ void setup() {
     }
 
     // Setting interrupt PIN to output is no problem, PIN must be normal HIGH
-    // Avoid glitch pulse by setting output state before switching pin to output mode
-    digitalWrite(INTERRUPT, HIGH);
     pinMode(INTERRUPT, OUTPUT);
+    digitalWrite(INTERRUPT, HIGH);
     
     // Setting up helper variables to determine EOF later on
     counter = 0;
