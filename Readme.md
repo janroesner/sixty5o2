@@ -16,7 +16,7 @@
 10. __Serial Sender__ (node.js) allowes to upload programs to the 6502 (error mitigation included) 
 11. __Fully documented source code__
 
-![Breadboard Image](/img/6502.jpg)
+![Breadboard Image](/img/6502b.jpg)
 
 # Motivation
 
