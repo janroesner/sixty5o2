@@ -1,3 +1,5 @@
+![Sixty 5o2 Logo](/img/Sixty5o2_Logo.png)
+
 # Introduction
 
 **Sixty/5o2** is a minimal bootloader / micro kernel / mini operating system (if you like) for [Ben Eaters 6502 Computer](https://eater.net/6502) on a breadboard. It is only **1.5kB** in size (assembled) but comes with quite a nice list of features:
@@ -14,7 +16,7 @@
 10. __Serial Sender__ (node.js) allowes to upload programs to the 6502 (error mitigation included) 
 11. __Fully documented source code__
 
-![Image of Sixty/5o2](/img/6502.jpg)
+![Breadboard Image](/img/6502.jpg)
 
 # Motivation
 
@@ -32,6 +34,11 @@ Especially the serial data transfer is enormously stable, since error mitigation
 
 **It's not perfect, in places not even nice. Last time I personally touched assembler was 20+ years ago, so please be gentle with criticism. PR's are king.**
 
+If you want to get a glimpse, check out the demo video on Youtube:
+
+[![Sixty5o2 - Mini OS for Ben Eater's 6502 Breadboard Computer](/img/Sixty5o2_MiniOS_th.jpg)](https://www.youtube.com/watch?v=sZl2wUgASyk)
+
+
 # Hardware Requirements
 
 There are only two requirements, both of them can be mitigated though:
@@ -43,7 +50,7 @@ There are only two requirements, both of them can be mitigated though:
 
 1. If you want to run at other clock speeds, you MUST adjust a global constant called `WAIT_C` in the bootloader code. It's a multiplier which is used to _sleep_  and just burns a number of cycles in a routine called `LIB__sleep`. If you run at lower clock speeds, adjust `WAIT_C` to a smaller number until keyboard and main menu become usable.
 
-2. Should your keyboard be built in a way so the buttons are normally tied _high_ and when pressed turn _low_, then you need to adjust the routine `VIA__read_keyboard_input` and XOR `A` with `$ff` after it was AND'ed with `#$0f`. This way the keystrokes will be interpreted correctly again.
+2. Should your keyboard be built according to the schematics (so the buttons are normally tied _high_ and when pressed turn _low_), then you need to adjust the routine `VIA__read_keyboard_input`. Simply uncomment line 555 in `bootloader.asm`. This will XOR the read value with 0xf and normalize it. This way the keystrokes will be interpreted correctly.
 
 # Software Requirements
 
@@ -113,14 +120,14 @@ Before you can upload a program to the 6502 through the Arduino, you need to set
  
 | Arduino | VIA 6522 |
 |---------|----------|
-|   31    |   17     |
-|   33    |   16     |
-|   35    |   15     |
-|   37    |   14     |
-|   39    |   13     |
-|   41    |   12     |
-|   43    |   11     |
-|   45    |   10     |
+|   31    |   10     |
+|   33    |   11     |
+|   35    |   12     |
+|   37    |   13     |
+|   39    |   14     |
+|   41    |   15     |
+|   43    |   16     |
+|   45    |   17     |
 
 If unsure, look up the pin setup of the VIA in the [official documentation](https://eater.net/datasheets/w65c22.pdf).
 
@@ -239,12 +246,34 @@ If you would like to see any particular feature I might be able to provide it ..
 
 # Support
 
-Should you be able / interested to support my work and help me spending more time in projects like these or others, your donation is more than welcome:
+My friend and founding partner Bastian and I decided, it's time to bring all the joy and fun that come with 8bit projects to a much broader audience. I quit a well paying contract and we both ditched a number of projects, to be able to focus on 8bit related content solely.
 
-https://www.paypal.me/janroesnerberlin
+We are currently working on a number of screencasts covering topics like:
+
+- **The worlds worst transistor clock implemented in Logisim**
+- **An 8bit computer implementation from scratch - in Logisim**
+- **Architecture updates to the 8bit machine for 64kb of RAM, more registers and instructions**
+- **A Ruby based assembler for homebrew 8bit projects in just a few lines of code**
+
+... and we have numerous ideas for other, fresh content to come.
+
+If you actually want to support us, it would mean the world to us, if you joined our newsletter. [8bitnews.io](https://8bitnews.io) is the first real 8bit newsletter out there. On a regular basis we handcraft the __latest 8bit news__, __learning resources__ and the __best YouTube videos__ into an email, and deliver it to your inbox, when you have the time for tinkering. It's well selected and curated, and we personally guarantee, there will be no spam.
+
+[![8bitnews.io](/img/8bitnews.png)](https://8bitnews.io)
+
+By the way, there is no catch here, you can unsubscribe with a single click. Anytime. We won't be mad at you.
+
+# Contact
+
+I personally really enjoy talking to likeminded people. So if you want to share your thoughts regarding this project, other 8bit topics, our newsletter or our screencasts, feel free to drop me some lines [via Email](mailto:jan@8bitnews.io) any time.
 
 # Credits
 
 - Ben Eater
 - Steven Wozniak
 - Anke L.
+- Tim Miller (special thx)
+- P.A. Bäckström
+- Wilgert Velinga
+- Ed Gleys
+- Jonathan Shockley
