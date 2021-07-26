@@ -101,7 +101,7 @@ bool writeData(char ary[]) {
 
         // For each byte set up the byte's corresponding bits at the digital ports
         for (int n = 0;  n < 8; n += 1) {
-            digitalWrite(31+2*n, bitRead(data, n) ? HIGH : LOW);
+            digitalWrite(DATA[n], bitRead(data, n) ? HIGH : LOW);
         }
         
         // Pull the interrupt pin low to trigger the interrupt service routine
