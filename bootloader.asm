@@ -552,9 +552,9 @@ VIA__read_keyboard_input:
     lda PORTA                                   ; load current key status from VIA
     ror                                         ; normalize the input to $1, $2, $4 and $8
     and #$0f                                    ; ignore first 4 bits
-    ;eor #$0f                                    ; uncomment / activate this line, if your keyboard
-                                                ; is built with buttons tied normal high, when
-                                                ; pushed low as per Ben's schematics
+    eor #$0f                                    ; deactivate / comment this line, if your keyboard
+                                                ; is built with buttons tied normal low, when
+                                                ; pushed turning high (in contrast to Ben's schematics)
 
     rts
 

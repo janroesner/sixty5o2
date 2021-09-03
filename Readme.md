@@ -44,13 +44,13 @@ If you want to get a glimpse, check out the demo video on Youtube:
 There are only two requirements, both of them can be mitigated though:
 
 1. Use the 1MHz clock (you **MUST** disconnect the clock module, otherwise it interferes)
-2. The keyboard buttons are tied _low_ in normal state, when pushed they get tied _high_ (this is opposite to Ben's design in his schematics)
+2. Some people (including me initially) built the mini keyboard such, that the buttons are tied _low_ in normal state, when pushed they get tied _high_. This is opposite to Ben's design in his schematics. I updated my setup according to the schematics, and the default behaviour is now, that the buttons are tied __high__ and only when pushed, they get pulled __low__.
 
 ## Possible Mitigation Strategies
 
 1. If you want to run at other clock speeds, you MUST adjust a global constant called `WAIT_C` in the bootloader code. It's a multiplier which is used to _sleep_  and just burns a number of cycles in a routine called `LIB__sleep`. If you run at lower clock speeds, adjust `WAIT_C` to a smaller number until keyboard and main menu become usable.
 
-2. Should your keyboard be built according to the schematics (so the buttons are normally tied _high_ and when pressed turn _low_), then you need to adjust the routine `VIA__read_keyboard_input`. Simply uncomment line 555 in `bootloader.asm`. This will XOR the read value with 0xf and normalize it. This way the keystrokes will be interpreted correctly.
+2. Should your keyboard not be built according to the schematics (so the buttons are normally tied _low_ and when pressed turn _high_), then you need to adjust the routine `VIA__read_keyboard_input`. Simply comment out line 555 in `bootloader.asm`. This will disable the XOR of the read value with 0xf. This way the keystrokes will be interpreted correctly.
 
 # Software Requirements
 
@@ -133,7 +133,7 @@ If unsure, look up the pin setup of the VIA in the [official documentation](http
 
 **Table 2: Port Setup 6502**
  
-| Arduino |     6522    |
+| Arduino |     6502    |
 |---------|-------------|
 |   53    |   4 (IRQB)  |
 
@@ -184,6 +184,21 @@ Navigate to the menu entry `Run` and hit the _RIGHT_ key to run your program.
 ```
 node Sender.js /examples/hello_world.out /dev/path_to_arduino_port
 ```
+
+## Link against routines in ROM
+
+This feature was added by **David Latham**. Big thank you! Since RAM is a scarse ressource and we do not use much of the ROM, you have the option to built and test routines in RAM first, and burn them into the ROM afterwards. This way you can build your very personal library of functions and extend the existing library of Sixty5o2.
+
+In order to do so, you have to rebuild the `bootloader.asm` as follows:
+
+```
+vasm -Fbin -dotdir -L bootloader.lst bootloader.asm -o bootloader.out
+```
+
+This generates the symbol list `bootloader.lst` with the hexadecimal addresses for all routines and labels. If you scroll down to the bottom, you will find the addresses of every routine, that Sixty5o2 provides. Now you can use these addresses in a new program, that you assemble and upload to RAM.
+
+Take a look at the example `using_rom_lib.asm` that David added to the examples folder.
+
 
 ## Using the Monitor
 
