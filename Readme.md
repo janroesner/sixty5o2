@@ -133,7 +133,7 @@ If unsure, look up the pin setup of the VIA in the [official documentation](http
 
 **Table 2: Port Setup 6502**
  
-| Arduino |     6522    |
+| Arduino |     6502    |
 |---------|-------------|
 |   53    |   4 (IRQB)  |
 
