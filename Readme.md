@@ -185,6 +185,21 @@ Navigate to the menu entry `Run` and hit the _RIGHT_ key to run your program.
 node Sender.js /examples/hello_world.out /dev/path_to_arduino_port
 ```
 
+## Link against routines in ROM
+
+This feature was added by **David Latham**. Big thank you! Since RAM is a scarse ressource and we do not use much of the ROM, you have the option to built and test routines in RAM first, and burn them into the ROM afterwards. This way you can build your very personal library of functions and extend the existing library of Sixty5o2.
+
+In order to do so, you have to rebuild the `bootloader.asm` as follows:
+
+```
+vasm -Fbin -dotdir -L bootloader.lst bootloader.asm -o bootloader.out
+```
+
+This generates the symbol list `bootloader.lst` with the hexadecimal addresses for all routines and labels. If you scroll down to the bottom, you will find the addresses of every routine, that Sixty5o2 provides. Now you can use these addresses in a new program, that you assemble and upload to RAM.
+
+Take a look at the example `using_rom_lib.asm` that David added to the examples folder.
+
+
 ## Using the Monitor
 
 The **hex monitor** is very useful during development and debugging. It lets you inspect the whole address space, RAM and ROM. you can navigate using the _UP_ and _DOWN_ keys. The _RIGHT_ key performs a bigger jump in time and space and the _LEFT_ key returns you to the main menu. The monitor is currently read only and the keyboard debouncing is far from being good. But it works.
