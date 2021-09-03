@@ -2,7 +2,7 @@
 ; Example program that uses the subroutines available in ROM.
 ;
 ; The addresses for these routines are captured by running
-;  `vasm6502_oldstyle -dotdir -Fbin -L bootloader.lst bootloader.asm -o bootloader.bin`
+;  `vasm -dotdir -Fbin -L bootloader.lst bootloader.asm -o bootloader.out`
 ; to compile the bootloader bin which you have to do anyway.  The resulting bootloader.lst
 ; file contains a list of all the lables together with their memory locations.
 ;
