@@ -31,6 +31,8 @@ Z1 = $01
 Z2 = $02
 Z3 = $03
 
+ISR_LOC = $04                                   ; pointer to IRQ Routine. 2 bytes. LSB + MSB
+
 VIDEO_RAM = $3fde                               ; $3fde - $3ffd - Video RAM for 32 char LCD display
 POSITION_MENU = $3fdc                           ; initialize positions for menu and cursor in RAM
 POSITION_CURSOR = $3fdd
@@ -61,6 +63,11 @@ PROGRAM_LOCATION = $0200                        ; memory location for user progr
 main:                                           ; boot routine, first thing loaded
     ldx #$ff                                    ; initialize the stackpointer with 0xff
     txs
+
+    lda #<ISR                                   ; initialize the ISR pointer to be
+    sta ISR_LOC                                 ; the one stored in rom.  This can be
+    lda #>ISR                                   ; overridden by programs loaded in but
+    sta ISR_LOC + 1                             ; first we need to be able to service Sender.js
 
     jsr LCD__initialize
     jsr LCD__clear_video_ram
@@ -1155,6 +1162,21 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
 
     rti
 
+;================================================================================
+;
+;   ISR - Interrupt Service Routine Handler
+;
+;   The ISR handler actually jumps to an address referenced by a location in Zero
+;   page.  The Main entry point of the OS defines this as being the "ISR" routine
+;   above.
+;
+;   This way we are able to have programs define their own IRQ handling routines
+;   by updating the address defined at ISR_LOC in Zero Page.
+;================================================================================
+ISR_SERVICE:
+     ldy #$00
+     jmp ISR_LOC
+
     .org $fffc                                  
     .word main                                  ; entry vector main routine
-    .word ISR                                   ; entry vector interrupt service routine
+    .word ISR_SERVICE                           ; entry vector interrupt service routine
