@@ -14,16 +14,16 @@ char PROTOCOL_FAILURE = 'f';
 // **************************************************************************
 
 // Data output pins connected to the 6522; values for the Arduino Mega
-const byte DATA[] = {31, 33, 35, 37, 39, 41, 43, 45};
+// const byte DATA[] = {31, 33, 35, 37, 39, 41, 43, 45};
 
 // Data output pins connected to the 6522; values for Arduino Nano
-// const byte DATA[] = {5, 6, 7, 8, 9, 10, 11, 12};
+const byte DATA[] = {5, 6, 7, 8, 9, 10, 11, 12};
 
 // Interrupt PIN on the Arduino Mega connected directly to the IRQB pin (PIN4) of the 6502(!)
-#define INTERRUPT 53
+//#define INTERRUPT 53
 
 // Interrupt PIN on the Arduino Nano connected directly to the IRQB pin (PIN4) of the 6502(!)
-// #define INTERRUPT 3
+#define INTERRUPT 3
 
 // **************************************************************************
 // ***** Important ** End                                               *****
@@ -102,6 +102,7 @@ void loop() {
             for (int n = 0; n < 8; n += 1) {
                 pinMode(DATA[n], INPUT);
             }
+			pinMode(INTERRUPT, INPUT);
             firstRun = true;
         }
     }
