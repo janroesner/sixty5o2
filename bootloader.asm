@@ -1174,8 +1174,7 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
 ;   by updating the address defined at ISR_LOC in Zero Page.
 ;================================================================================
 ISR_SERVICE:
-     ldy #$00
-     jmp ISR_LOC
+     jmp (ISR_LOC)
 
     .org $fffc                                  
     .word main                                  ; entry vector main routine
