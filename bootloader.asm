@@ -1164,7 +1164,7 @@ CURRENT_RAM_ADDRESS = Z0                        ; a RAM address handle for indir
 
 ;================================================================================
 ;
-;   ISR - Interrupt Service Routine Handler
+;   ISR_SERVICE - Interrupt Service Routine Handler
 ;
 ;   The ISR handler actually jumps to an address referenced by a location in Zero
 ;   page.  The Main entry point of the OS defines this as being the "ISR" routine
