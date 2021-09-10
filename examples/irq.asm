@@ -38,7 +38,7 @@ reset:
 	lda #%11111111	; Set all pins on PORTB to output
 	sta DDRB
 
-	lda #%11100000  ; Set top 3 pins on PORTA to output (bottom 5 pins as input)
+	lda #%11100001  ; Set top 3 and bottom 1 pins on PORTA to output (middle 4 pins as input)
 	sta DDRA
 
 	lda #%00111000	; Set 8-bit mode; 2 line display; 5x8 font
@@ -193,6 +193,27 @@ print_char:
 	sta PORTA		; Clear RS/RW/E bits
 	rts
 
+
+; Y = Length of note 0 - 255
+; x = freq.
+
+beep:
+	stx $10
+
+.beep_1:
+	ldx $10
+	lda #$01
+	sta PORTA
+.beep_2:
+	dex
+	bne .beep_2
+	lda #$00
+	sta PORTA
+	dey
+	bne .beep_1
+
+	rts
+
 irq:
 	pha
 	txa
@@ -205,14 +226,9 @@ irq:
 	inc counter + 1
 
 exit_irq:
-	ldy #$80
-.outer:
-	ldx #$ff
-.inner:
-	dex
-	bne .inner
-	dey
-	bne .outer
+	ldy #$F0
+	ldx #$60
+	jsr beep
 
 	bit PORTA
 
