@@ -219,7 +219,7 @@ Therefore RAM is usable in a meaningful fashion from $0200 upwards only.
 
 ## 2. Used Zero Page Locations
 
-The bootloader needs to use some Zero Page locations: `$00 - $03`. Expect trouble if you overwrite / use them from within your own programs.
+The bootloader needs to use some Zero Page locations: `$00 - $05`. Expect trouble if you overwrite / use them from within your own programs.
 
 ## 3. Used RAM
 
@@ -230,6 +230,47 @@ The bootloader also occupies some RAM. Most part is used as VideoRam to talk to 
 ## 4. Interrupt Service Routine - ISR
 
 The Interrupt Service Routine (ISR) implemented at the end of available ROM realizes the serial loading. The way it works is quite simple. As soon as the Arduino set up all 8 bit of a byte at the data ports, it pulls the interrupt pin of the 6502 low for 30 microseconds. This triggers the 6502 to halt the current program, put all registers onto the stack and execute any routine who's starting address can be found in the Interrupt Vector Address (`$fffe-$ffff`) - the ISR. This routine reads the byte, writes it into the RAM, increases the address pointer for the next byte to come and informs the main program that data is still flowing. Consult the source for further details, it's quite straight forward.
+
+## 5. Interrupt Service Routine Handler - ISR_SERVICE
+
+The routine pointed to by vector address $fffe is actually the ISR_SERVICE routine.  This routine performs a zero page addressed jump `JMP $(ISR_LOC)` which is configured in bootloader.asm to point to the address of ISR.
+
+User programs are able to overwrite the address stored in ISR_LOC to create their own interrupt routines for IRQ.  NMI is not supported yet.
+
+For example:
+
+``` asm
+ISR_LOC 	= $04 ; uses 2 bytes ($04 and $05)
+counter     = $01
+	.org $0200
+
+	lda #<CUSTOM_ISR	; set up CUSTOM ISR pointer in Zero Page
+	sta ISR_LOC			; $04 LSB
+	lda #>CUSTOM_ISR
+	sta ISR_LOC + 1		; $05 MSB
+
+; your program here
+	lda #$00			; init 16 bit counter variable
+	sta counter
+	sta counter + 1
+
+CUSTOM_ISR:
+	inc counter
+	bne .end_isr
+	inc counter+1
+.end_isr
+	rti
+
+```
+
+A complete example of how the Ben Eater Interrupt routine that increments a counter on each button push is included in `examples/irq.asm`.  This example is designed to work with the following wiring on Ben Eater's 6502 build.
+
+PUSH BUTTON:
+
+* right leg tied to GROUND, left leg pulled up with 1kohm resistor to 5v.
+* Left leg wired to CA1 (pin 40) on the VIA 65C22
+
+IRQ from 65C22 (PIN 21) to IRQ on 65C02 (PIN 4).  Leave PIN 4 tied high with a 1kohm resistor.
 
 # Shortcomings
 
