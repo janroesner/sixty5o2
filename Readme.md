@@ -219,7 +219,7 @@ Therefore RAM is usable in a meaningful fashion from $0200 upwards only.
 
 ## 2. Used Zero Page Locations
 
-The bootloader needs to use some Zero Page locations: `$00 - $04`. Expect trouble if you overwrite / use them from within your own programs.
+The bootloader needs to use some Zero Page locations: `$00 - $05`. Expect trouble if you overwrite / use them from within your own programs.
 
 ## 3. Used RAM
 
@@ -240,14 +240,14 @@ User programs are able to overwrite the address stored in ISR_LOC to create thei
 For example:
 
 ``` asm
-ISR_LOC 	= $04
+ISR_LOC 	= $04 ; uses 2 bytes ($04 and $05)
 counter     = $01
 	.org $0200
 
 	lda #<CUSTOM_ISR	; set up CUSTOM ISR pointer in Zero Page
-	sta ISR_LOC
+	sta ISR_LOC			; $04 LSB
 	lda #>CUSTOM_ISR
-	sta ISR_LOC + 1
+	sta ISR_LOC + 1		; $05 MSB
 
 ; your program here
 	lda #$00			; init 16 bit counter variable
