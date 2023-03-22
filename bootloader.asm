@@ -42,6 +42,7 @@ PROGRAM_LOCATION = $0200                        ; memory location for user progr
 
     .org $8000
 
+    .include "ram_test.asm"    
 
 ;================================================================================
 ;
@@ -101,9 +102,9 @@ MENU_main:
 
     jmp .start
 .MAX_SCREEN_POS:                                ; define some constants in ROM     
-    .byte $05                                   ; its always number of items - 2, here its 6 windows ($00-$05) in 7 items
+    .byte $06                                   ; its always number of items - 2, here its 6 windows ($00-$05) in 7 items
 .OFFSETS:
-    .byte $00, $10, $20, $30, $40, $50          ; content offsets for all 6 screen windows
+    .byte $00, $10, $20, $30, $40, $50, $60     ; content offsets for all 6 screen windows
 .start:                                         ; and off we go
     jsr LCD__clear_video_ram
     ldx POSITION_MENU
@@ -199,8 +200,10 @@ MENU_main:
     cmp #4
     beq .clear_ram
     cmp #5
-    beq .about
+    beq .test_ram
     cmp #6
+    beq .about
+    cmp #7
     beq .credits
     jmp .end                                    ; should we have an invalid option, restart
 
@@ -222,6 +225,9 @@ MENU_main:
 .clear_ram:                                     ; start the clear ram routine
     jsr BOOTLOADER__clear_ram
     jmp .start
+.test_ram:
+    jsr RAM_TEST__main
+    jmp .start    
 .about:                                         ; start the about routine
     lda #<about
     ldy #>about
@@ -1073,6 +1079,7 @@ menu_items:
     .text " Run            "
     .text " Monitor        "
     .text " Clear RAM      "
+    .text " RAM Test       "
     .text " About          "
     .text " Credits        "
 about:
