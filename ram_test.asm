@@ -53,13 +53,15 @@ RAM_TEST__main:
   jsr .display_start_msg
   lda #RAM_TEST__STATUS_RUNNING
   sta RAM_TEST__STATUS                      ; set the status to running
-  ldx #RAM_TEST__NUM_PATTERNS
+  ldx #RAM_TEST__NUM_PATTERNS - 1
   stx RAM_TEST__CURRENT_PATTERN_OFFSET       ; initialize with the first test bit-pattern
 .main_loop
   jsr .test_pattern                         ; run a test with the current bit-pattern
   ldy RAM_TEST__STATUS
   bne .main_done                            ; exit if no longer running
-  dec RAM_TEST__CURRENT_PATTERN_OFFSET       ; set to the next test bit-pattern
+  dec RAM_TEST__CURRENT_PATTERN_OFFSET      ; set to the next test bit-pattern
+  ldy #255                                  ; done with all patterns?
+  cpy RAM_TEST__CURRENT_PATTERN_OFFSET
   beq .main_done                            ; exit if all of the patterns have been run
   jmp .main_loop
 .main_done
@@ -234,42 +236,13 @@ RAM_TEST__main:
   ldy #>RAM_TEST__PAGE_MSG
   ldx #3
   jsr LCD__print_with_offset            ; append 'PAGE='
-  jsr .display_page_num                 ; append the memory page number
+  lda RAM_TEST_TARGET + 1               ; the current page in RAM of the test
+  ldx #8                                
+  jsr .print_hex_num
   jsr LCD__render
   pla
   rts
 
-
-;================================================================================
-;
-;  .display_page_num - Shows on the LCD the current memory page under test
-;
-;
-;   ————————————————————————————————————
-;   Preparatory Ops:  RAM_TEST_TARGET + 1 - contains the memory being being tested
-;               
-;   Returned Values: none
-;
-;   Destroys:        .A
-;
-;   ————————————————————————————————————
-;
-;================================================================================      
-.display_page_num:
-  lda RAM_TEST_TARGET + 1         ; the current page in RAM of the test
-  and #$f0                        ; get high digit
-  clc
-  ror 
-  ror
-  ror
-  ror
-  ldx #8
-  jsr .print_numeral
-  lda RAM_TEST_TARGET + 1
-  and #$0f                        ; get low digit
-  ldx #9
-  jsr .print_numeral
-  rts
 
 ;================================================================================
 ;

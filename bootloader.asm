@@ -102,9 +102,9 @@ MENU_main:
 
     jmp .start
 .MAX_SCREEN_POS:                                ; define some constants in ROM     
-    .byte $05                                   ; its always number of items - 2, here its 6 windows ($00-$05) in 7 items
+    .byte $06                                   ; its always number of items - 2, here its 6 windows ($00-$05) in 7 items
 .OFFSETS:
-    .byte $00, $10, $20, $30, $40, $50          ; content offsets for all 6 screen windows
+    .byte $00, $10, $20, $30, $40, $50, $60     ; content offsets for all 6 screen windows
 .start:                                         ; and off we go
     jsr LCD__clear_video_ram
     ldx POSITION_MENU
